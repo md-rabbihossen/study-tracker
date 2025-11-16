@@ -174,8 +174,23 @@ const scheduleData = {
           description: "Data Science: Watch lecture / Review terms.",
         },
         {
+          id: "wd-extra1",
+          time: "10:00 - 10:25 PM",
+          description: "Extra Study: Review or practice problems.",
+        },
+        {
+          id: "wd-extra2",
+          time: "10:30 - 10:55 PM",
+          description: "Extra Study: Work on assignments or projects.",
+        },
+        {
+          id: "wd-extra3",
+          time: "11:00 - 11:25 PM",
+          description: "Extra Study: Final review or reading.",
+        },
+        {
           id: "wd-stop",
-          time: "10:00 PM",
+          time: "11:30 PM",
           description: "🛑 STOP. Sleep.",
         },
       ],
@@ -369,9 +384,39 @@ const scheduleData = {
           description: "🤲 Isha Prayer",
         },
         {
+          id: "we-extra1",
+          time: "8:30 - 8:55 PM",
+          description: "Extra Study: Review week's material.",
+        },
+        {
+          id: "we-extra2",
+          time: "9:00 - 9:25 PM",
+          description: "Extra Study: Practice problems or coding.",
+        },
+        {
+          id: "we-extra3",
+          time: "9:30 - 9:55 PM",
+          description: "Extra Study: Work on personal projects.",
+        },
+        {
+          id: "we-extra4",
+          time: "10:00 - 10:25 PM",
+          description: "Extra Study: Reading or research.",
+        },
+        {
+          id: "we-extra5",
+          time: "10:30 - 10:55 PM",
+          description: "Extra Study: Assignment work.",
+        },
+        {
+          id: "we-extra6",
+          time: "11:00 - 11:25 PM",
+          description: "Extra Study: Final review.",
+        },
+        {
           id: "we-stop",
-          time: "8:30 PM",
-          description: "🛑 STOP. Enjoy your evening.",
+          time: "11:30 PM",
+          description: "🛑 STOP. Sleep.",
         },
       ],
     },

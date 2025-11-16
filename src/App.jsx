@@ -1004,7 +1004,7 @@ const StatsView = () => {
 };
 
 // --- Week View Component ---
-const WeekView = ({ currentDate, onDateSelect }) => {
+const WeekView = ({ currentDate, onDateSelect, completedTasks }) => {
   const weekDays = useMemo(() => {
     const days = [];
     const startOfWeek = new Date(currentDate);
@@ -1034,7 +1034,7 @@ const WeekView = ({ currentDate, onDateSelect }) => {
       });
     }
     return days;
-  }, [currentDate]);
+  }, [currentDate, completedTasks]);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
@@ -1411,11 +1411,28 @@ const ScheduleView = ({
   const currentSessionRef = useRef(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Update every 10 seconds
-    return () => clearInterval(timer);
+    // Update time immediately on mount
+    setCurrentTime(new Date());
+
+    // Update every 10 seconds
+    const timer = setInterval(() => setCurrentTime(new Date()), 10000);
+
+    // Also update when page becomes visible again
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        setCurrentTime(new Date());
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   }, []);
 
-  // Auto-scroll to current session on mount and when schedule changes
+  // Auto-scroll to current session on mount and when schedule/time changes
   useEffect(() => {
     if (currentSessionRef.current) {
       currentSessionRef.current.scrollIntoView({
@@ -1735,6 +1752,7 @@ export default function App() {
                 <WeekView
                   currentDate={selectedDate}
                   onDateSelect={setSelectedDate}
+                  completedTasks={completedTasks}
                 />
               </aside>
             </div>

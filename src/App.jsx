@@ -14,7 +14,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 
 // --- Helper Functions ---
 const getLocalDateString = (date) => {
@@ -67,8 +67,23 @@ const scheduleData = {
           description: "DSA: Analyze solution for the problem.",
         },
         {
+          id: "wd-study-1",
+          time: "7:00 - 7:25 AM",
+          description: "📚 Study Session: Review subjects",
+        },
+        {
+          id: "wd-study-brk",
+          time: "7:25 - 7:30 AM",
+          description: "Break",
+        },
+        {
+          id: "wd-study-2",
+          time: "7:30 - 7:55 AM",
+          description: "📚 Study Session: Practice problems",
+        },
+        {
           id: "wd-prep",
-          time: "7:00 - 8:45 AM",
+          time: "8:00 - 8:45 AM",
           description: "Breakfast & Commute to University",
         },
       ],
@@ -176,9 +191,59 @@ const scheduleData = {
           description: "🤲 Fajr Prayer",
         },
         {
-          id: "we-rest",
-          time: "5:30 - 8:55 AM",
-          description: "Rest / Sleep / Light Breakfast",
+          id: "we-study-1",
+          time: "5:30 - 5:55 AM",
+          description: "📚 Study Session: Review notes",
+        },
+        {
+          id: "we-study-brk-1",
+          time: "5:55 - 6:00 AM",
+          description: "Break",
+        },
+        {
+          id: "we-study-2",
+          time: "6:00 - 6:25 AM",
+          description: "📚 Study Session: Practice problems",
+        },
+        {
+          id: "we-study-brk-2",
+          time: "6:25 - 6:30 AM",
+          description: "Break",
+        },
+        {
+          id: "we-study-3",
+          time: "6:30 - 6:55 AM",
+          description: "📚 Study Session: Read concepts",
+        },
+        {
+          id: "we-breakfast",
+          time: "7:00 - 7:30 AM",
+          description: "Breakfast",
+        },
+        {
+          id: "we-study-4",
+          time: "7:30 - 7:55 AM",
+          description: "📚 Study Session: Light Reading / Review",
+        },
+        {
+          id: "we-study-brk-3",
+          time: "7:55 - 8:00 AM",
+          description: "Break",
+        },
+        {
+          id: "we-study-5",
+          time: "8:00 - 8:25 AM",
+          description: "📚 Study Session: Practice / Prep for day",
+        },
+        {
+          id: "we-study-brk-4",
+          time: "8:25 - 8:30 AM",
+          description: "Break",
+        },
+        {
+          id: "we-study-6",
+          time: "8:30 - 8:55 AM",
+          description: "📚 Study Session: Final review",
         },
       ],
     },
@@ -1004,8 +1069,45 @@ const WeekView = ({ currentDate, onDateSelect }) => {
   );
 };
 
+// --- Day Type Modal Component ---
+const DayTypeModal = ({ isOpen, onSelect }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 animate-fadeIn">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CalendarDays size={32} className="text-blue-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            Is University Open Today?
+          </h2>
+          <p className="text-gray-600">Choose your schedule type for today</p>
+        </div>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => onSelect("weekday")}
+            className="flex items-center justify-center gap-3 px-6 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg"
+          >
+            <BookOpen size={20} />
+            Yes - Weekday Schedule
+          </button>
+          <button
+            onClick={() => onSelect("weekend")}
+            className="flex items-center justify-center gap-3 px-6 py-4 bg-gray-100 text-gray-900 rounded-xl font-semibold hover:bg-gray-200 transition-all transform hover:scale-105"
+          >
+            <X size={20} />
+            No - Weekend Schedule
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- Header Component ---
-const Header = ({ view, setView, currentView, setCurrentView }) => {
+const Header = ({ view, currentView, setCurrentView }) => {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -1014,7 +1116,7 @@ const Header = ({ view, setView, currentView, setCurrentView }) => {
   }, []);
 
   return (
-    <header className="mb-8">
+    <header className="mb-8 sticky top-0 z-50 bg-gray-50 pb-4 pt-4 -mt-4">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
           Study Tracker
@@ -1029,28 +1131,6 @@ const Header = ({ view, setView, currentView, setCurrentView }) => {
                 second: "2-digit",
               })}
             </span>
-          </div>
-          <div className="flex rounded-lg bg-gray-100 p-1 border border-gray-200">
-            <button
-              onClick={() => setView("weekday")}
-              className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                view === "weekday"
-                  ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              Weekday
-            </button>
-            <button
-              onClick={() => setView("weekend")}
-              className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                view === "weekend"
-                  ? "bg-white text-gray-900 shadow-sm ring-1 ring-gray-200"
-                  : "text-gray-500 hover:text-gray-900"
-              }`}
-            >
-              Weekend
-            </button>
           </div>
         </div>
       </div>
@@ -1156,41 +1236,195 @@ const ProgressBar = ({ schedule, completedTasks, customTasksCount }) => {
   );
 };
 
-// --- TaskItem Component ---
-const TaskItem = ({ task, isCompleted, onToggle }) => {
-  const { id, time, description } = task;
-  return (
-    <li
-      onClick={() => onToggle(id)}
-      className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-gray-50 transition-colors duration-150 group"
-      role="checkbox"
-      aria-checked={isCompleted}
-      tabIndex="0"
-      onKeyPress={(e) => (e.key === "Enter" || e.key === " ") && onToggle(id)}
-    >
-      <div
-        data-checked={isCompleted}
-        className="w-5 h-5 rounded border border-gray-300 bg-white flex-shrink-0 flex items-center justify-center transition-all data-[checked=true]:bg-gray-900 data-[checked=true]:border-gray-900 group-hover:border-gray-400"
-      >
-        {isCompleted && (
-          <Check size={14} className="text-white" strokeWidth={3} />
-        )}
-      </div>
-      <span className="text-sm font-mono text-gray-500 w-28 sm:w-32 flex-shrink-0">
-        {time}
-      </span>
-      <span
-        data-checked={isCompleted}
-        className="text-base text-gray-900 transition-colors data-[checked=true]:line-through data-[checked=true]:text-gray-400"
-      >
-        {description}
-      </span>
-    </li>
-  );
+// --- Helper to check if current time is within a time range ---
+const isCurrentSession = (timeString) => {
+  try {
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // Try to match format: "5:00 - 5:25 AM" or "5:00 AM - 5:25 AM" or "9:00 - 1:00 PM"
+    const match = timeString.match(
+      /(\d{1,2}):(\d{2})\s*(AM|PM)?\s*-\s*(\d{1,2}):(\d{2})\s*(AM|PM)/i
+    );
+    if (!match) {
+      console.log("❌ No regex match for:", timeString);
+      return false;
+    }
+
+    let startHour = parseInt(match[1]);
+    const startMin = parseInt(match[2]);
+    let endHour = parseInt(match[4]);
+    const endMin = parseInt(match[5]);
+    const endPeriod = match[6].toUpperCase();
+
+    // Determine start period
+    let startPeriod;
+    if (match[3]) {
+      // Explicit AM/PM on start time
+      startPeriod = match[3].toUpperCase();
+    } else {
+      // No AM/PM on start time - infer it logically
+      // If end is PM and start hour > end hour, start is likely AM (e.g., "9:00 - 1:00 PM" = 9 AM to 1 PM)
+      // If end is AM or start hour <= end hour with same period, use end period
+      if (endPeriod === "PM" && startHour > endHour) {
+        startPeriod = "AM";
+      } else {
+        startPeriod = endPeriod;
+      }
+    }
+
+    // Convert start time to 24-hour format
+    if (startPeriod === "PM" && startHour !== 12) startHour += 12;
+    if (startPeriod === "AM" && startHour === 12) startHour = 0;
+
+    // Convert end time to 24-hour format
+    if (endPeriod === "PM" && endHour !== 12) endHour += 12;
+    if (endPeriod === "AM" && endHour === 12) endHour = 0;
+
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+
+    const isMatch =
+      currentMinutes >= startMinutes && currentMinutes < endMinutes;
+
+    // Debug logging - only log matches to reduce noise
+    if (isMatch) {
+      console.log(
+        "✅ MATCH!",
+        timeString,
+        `| Current: ${currentMinutes}min (${now.getHours()}:${String(
+          now.getMinutes()
+        ).padStart(2, "0")})`,
+        `| Range: ${startMinutes}-${endMinutes}min`
+      );
+    }
+
+    return isMatch;
+  } catch (error) {
+    console.error("❌ Error in isCurrentSession:", error, "for", timeString);
+    return false;
+  }
 };
 
+// --- TaskItem Component ---
+const TaskItem = forwardRef(
+  (
+    { task, isCompleted, onToggle, isEditing, onEdit, onEditTask, isCurrent },
+    ref
+  ) => {
+    const { id, time, description } = task;
+    const [editTime, setEditTime] = useState(time);
+    const [editDesc, setEditDesc] = useState(description);
+
+    const handleSave = () => {
+      onEdit(id, editTime, editDesc);
+    };
+
+    if (isEditing) {
+      return (
+        <li className="flex items-center gap-3 px-6 py-4 bg-blue-50 border-l-4 border-blue-500">
+          <input
+            type="text"
+            value={editTime}
+            onChange={(e) => setEditTime(e.target.value)}
+            className="text-sm font-mono text-gray-700 w-44 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., 5:00 - 5:25 AM"
+          />
+          <input
+            type="text"
+            value={editDesc}
+            onChange={(e) => setEditDesc(e.target.value)}
+            className="flex-1 text-sm text-gray-900 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Task description"
+          />
+          <button
+            onClick={handleSave}
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+          >
+            Save
+          </button>
+        </li>
+      );
+    }
+
+    return (
+      <li
+        ref={ref}
+        onClick={() => (onEditTask ? onEditTask(id) : onToggle(id))}
+        className={`flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-gray-50 transition-colors duration-150 group ${
+          isCurrent ? "bg-amber-50 border-l-4 border-amber-500" : ""
+        }`}
+        role="checkbox"
+        aria-checked={isCompleted}
+        tabIndex="0"
+        onKeyPress={(e) =>
+          (e.key === "Enter" || e.key === " ") &&
+          (onEditTask ? onEditTask(id) : onToggle(id))
+        }
+      >
+        <div
+          data-checked={isCompleted}
+          className="w-5 h-5 rounded border border-gray-300 bg-white flex-shrink-0 flex items-center justify-center transition-all data-[checked=true]:bg-gray-900 data-[checked=true]:border-gray-900 group-hover:border-gray-400"
+        >
+          {isCompleted && (
+            <Check size={14} className="text-white" strokeWidth={3} />
+          )}
+        </div>
+        <span
+          className={`text-sm font-mono w-28 sm:w-32 flex-shrink-0 ${
+            isCurrent ? "text-amber-700 font-semibold" : "text-gray-500"
+          }`}
+        >
+          {time}
+        </span>
+        <span
+          data-checked={isCompleted}
+          className={`text-base transition-colors data-[checked=true]:line-through data-[checked=true]:text-gray-400 ${
+            isCurrent ? "text-gray-900 font-semibold" : "text-gray-900"
+          }`}
+        >
+          {description}
+        </span>
+        {isCurrent && (
+          <span className="ml-auto px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full animate-pulse">
+            LIVE
+          </span>
+        )}
+      </li>
+    );
+  }
+);
+
+TaskItem.displayName = "TaskItem";
+
 // --- ScheduleView Component ---
-const ScheduleView = ({ schedule, completedTasks, onToggleTask }) => {
+const ScheduleView = ({
+  schedule,
+  completedTasks,
+  onToggleTask,
+  editMode,
+  editingTaskId,
+  onEditTask,
+  onSaveEdit,
+}) => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const currentSessionRef = useRef(null);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 10000); // Update every 10 seconds
+    return () => clearInterval(timer);
+  }, []);
+
+  // Auto-scroll to current session on mount and when schedule changes
+  useEffect(() => {
+    if (currentSessionRef.current) {
+      currentSessionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [schedule, currentTime]); // Add currentTime as dependency to update highlight
+
   return (
     <div className="space-y-6">
       {schedule.map((session) => (
@@ -1202,14 +1436,23 @@ const ScheduleView = ({ schedule, completedTasks, onToggleTask }) => {
             {session.title}
           </h2>
           <ul className="divide-y divide-gray-100">
-            {session.tasks.map((task) => (
-              <TaskItem
-                key={task.id}
-                task={task}
-                isCompleted={completedTasks.has(task.id)}
-                onToggle={onToggleTask}
-              />
-            ))}
+            {session.tasks.map((task) => {
+              // Recalculate isCurrent on every render (which happens when currentTime updates)
+              const isCurrent = isCurrentSession(task.time);
+              return (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  isCompleted={completedTasks.has(task.id)}
+                  onToggle={onToggleTask}
+                  onEditTask={editMode ? onEditTask : null}
+                  isEditing={editMode && editingTaskId === task.id}
+                  onEdit={onSaveEdit}
+                  isCurrent={isCurrent}
+                  ref={isCurrent ? currentSessionRef : null}
+                />
+              );
+            })}
           </ul>
         </section>
       ))}
@@ -1224,6 +1467,79 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [completedTasks, setCompletedTasks] = useState(new Set());
   const [customTasksCount, setCustomTasksCount] = useState(0);
+  const [editMode, setEditMode] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [customSchedule, setCustomSchedule] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [dayTypeSelected, setDayTypeSelected] = useState(false);
+  const [currentDateKey, setCurrentDateKey] = useState(
+    getLocalDateString(new Date())
+  );
+
+  // Check if modal should be shown (Sun-Thu only, once per day)
+  // Also check periodically if date has changed
+  useEffect(() => {
+    const checkDayType = () => {
+      const today = new Date();
+      const dayOfWeek = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+      const dateKey = getLocalDateString(today);
+
+      // If date changed, reset the selection
+      if (dateKey !== currentDateKey) {
+        setCurrentDateKey(dateKey);
+        setDayTypeSelected(false);
+        setShowModal(false);
+      }
+
+      const storageKey = `dayType_${dateKey}`;
+      const savedDayType = localStorage.getItem(storageKey);
+
+      // Show modal only on Sun-Thu (0-4) and if not already answered today
+      if (dayOfWeek >= 0 && dayOfWeek <= 4) {
+        if (savedDayType) {
+          // Load saved preference
+          setView(savedDayType);
+          setDayTypeSelected(true);
+        } else if (!dayTypeSelected) {
+          // Show modal to ask (only if not already selected in this session)
+          setShowModal(true);
+        }
+      } else {
+        // Friday (5) or Saturday (6) - auto set to weekend
+        setView("weekend");
+        setDayTypeSelected(true);
+      }
+    };
+
+    // Check immediately on mount
+    checkDayType();
+
+    // Check every minute for date changes
+    const interval = setInterval(checkDayType, 60000);
+
+    return () => clearInterval(interval);
+  }, [currentDateKey, dayTypeSelected]);
+
+  const handleDayTypeSelect = (type) => {
+    const dateKey = getLocalDateString(new Date());
+    const storageKey = `dayType_${dateKey}`;
+    localStorage.setItem(storageKey, type);
+    setView(type);
+    setShowModal(false);
+    setDayTypeSelected(true);
+  };
+
+  // Load custom schedule from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("customSchedule");
+      if (saved) {
+        setCustomSchedule(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error("Error loading custom schedule:", error);
+    }
+  }, []);
 
   useEffect(() => {
     if (window.Notification && Notification.permission === "default") {
@@ -1294,14 +1610,70 @@ export default function App() {
     });
   };
 
-  const currentSchedule = scheduleData[view];
+  const handleEditTask = (taskId) => {
+    setEditingTaskId(taskId);
+  };
+
+  const handleSaveEdit = (taskId, newTime, newDesc) => {
+    // Deep clone the schedule to avoid mutation
+    const baseSchedule = customSchedule || scheduleData;
+    const updatedSchedule = {
+      weekday: baseSchedule.weekday.map((session) => ({
+        ...session,
+        tasks: session.tasks.map((task) => ({ ...task })),
+      })),
+      weekend: baseSchedule.weekend.map((session) => ({
+        ...session,
+        tasks: session.tasks.map((task) => ({ ...task })),
+      })),
+    };
+
+    // Find and update the task
+    for (let section of updatedSchedule[view]) {
+      const taskIndex = section.tasks.findIndex((t) => t.id === taskId);
+      if (taskIndex !== -1) {
+        section.tasks[taskIndex] = {
+          ...section.tasks[taskIndex],
+          time: newTime,
+          description: newDesc,
+        };
+        break;
+      }
+    }
+
+    setCustomSchedule(updatedSchedule);
+    localStorage.setItem("customSchedule", JSON.stringify(updatedSchedule));
+    setEditingTaskId(null);
+  };
+
+  const toggleEditMode = () => {
+    setEditMode(!editMode);
+    setEditingTaskId(null);
+  };
+
+  const resetToDefault = () => {
+    if (
+      window.confirm(
+        "Reset schedule to default? This will clear all your customizations."
+      )
+    ) {
+      setCustomSchedule(null);
+      localStorage.removeItem("customSchedule");
+      setEditMode(false);
+      setEditingTaskId(null);
+    }
+  };
+
+  const currentSchedule = customSchedule
+    ? customSchedule[view]
+    : scheduleData[view];
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8">
+      <DayTypeModal isOpen={showModal} onSelect={handleDayTypeSelect} />
       <div className="max-w-5xl mx-auto">
         <Header
           view={view}
-          setView={setView}
           currentView={currentView}
           setCurrentView={setCurrentView}
         />
@@ -1315,6 +1687,33 @@ export default function App() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={toggleEditMode}
+                      className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                        editMode
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {editMode ? "✓ Done Editing" : "✏️ Edit Schedule"}
+                    </button>
+                    {customSchedule && (
+                      <button
+                        onClick={resetToDefault}
+                        className="px-4 py-2 bg-red-100 text-red-700 rounded-lg font-medium hover:bg-red-200 transition-colors"
+                      >
+                        Reset to Default
+                      </button>
+                    )}
+                  </div>
+                  {editMode && (
+                    <span className="text-sm text-gray-500 italic">
+                      Click any task to edit
+                    </span>
+                  )}
+                </div>
                 <ProgressBar
                   schedule={currentSchedule}
                   completedTasks={completedTasks}
@@ -1324,16 +1723,20 @@ export default function App() {
                   schedule={currentSchedule}
                   completedTasks={completedTasks}
                   onToggleTask={handleToggleTask}
+                  editMode={editMode}
+                  editingTaskId={editingTaskId}
+                  onEditTask={handleEditTask}
+                  onSaveEdit={handleSaveEdit}
                 />
               </div>
 
-              <div className="space-y-6">
+              <aside className="space-y-6 lg:sticky lg:top-28 lg:h-fit lg:self-start">
                 <PomodoroTimer />
                 <WeekView
                   currentDate={selectedDate}
                   onDateSelect={setSelectedDate}
                 />
-              </div>
+              </aside>
             </div>
           </>
         )}
